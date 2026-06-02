@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>油耗助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            margin: -16px -16px 20px -16px;
+            padding: 20px 16px;
+            color: white;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .amount-display {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-top: 8px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        button:active {
+            background: #45a049;
+            transform: scale(0.98);
+        }
+
+        .btn-danger {
+            background: #f44336;
+        }
+
+        .btn-danger:active {
+            background: #e53935;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-group button {
+            flex: 1;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+        }
+
+        .history-header h3 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .record-count {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .record-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .record-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .record-date {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #f44336;
+            font-size: 20px;
+            padding: 4px 8px;
+            width: auto;
+            cursor: pointer;
+        }
+
+        .record-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .record-detail-item {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .record-detail-item strong {
+            color: #333;
+        }
+
+        .record-fuel {
+            color: #4CAF50;
+            font-weight: 500;
+        }
+
+        .record-consumption {
+            font-size: 12px;
+            color: #ff9800;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #eee;
+        }
+
+        .record-note {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .modal-content p {
+            margin: 16px 0;
+            color: #666;
+        }
+
+        .bottom-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 10px;
+            padding: 12px 16px;
+            background: white;
+            border-top: 1px solid #eee;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .bottom-actions button {
+            flex: 1;
+            margin: 0;
+        }
+
+        .filter-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .filter-bar select {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .filter-bar input {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .reset-filter {
+            background: #999;
+            padding: 8px 12px;
+            width: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⛽ 油耗助手</h1>
+        <p>记录加油，计算油耗和花费</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-label">加油量</div>
+            <div class="stat-value" id="totalFuel">0</div>
+            <div class="stat-label" style="font-size: 10px;" id="fuelUnit">L</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">总里程</div>
+            <div class="stat-value" id="totalMileage">0</div>
+            <div class="stat-label" style="font-size: 10px;" id="mileageUnit">km</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">总金额</div>
+            <div class="stat-value" id="totalCost">0</div>
+            <div class="stat-label" style="font-size: 10px;" id="costUnit">元</div>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="form-group">
+            <label>📅 日期</label>
+            <input type="date" id="date">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>⛽ 加油量 (升)</label>
+                <input type="number" id="fuel" step="0.01" placeholder="0.00" oninput="calculateAmount()">
+            </div>
+            <div class="form-group">
+                <label>💰 单价 (元/升)</label>
+                <input type="number" id="price" step="0.01" placeholder="0.00" oninput="calculateAmount()">
+            </div>
+        </div>
+        <div class="amount-display" id="amountDisplay">
+            💰 金额: 0.00 元
+        </div>
+        <div class="form-group">
+            <label>📊 当前里程 (公里)</label>
+            <input type="number" id="mileage" step="1" placeholder="例如：12500">
+        </div>
+        <div class="form-group">
+            <label>⛽ 汽油标号</label>
+            <select id="fuelType">
+                <option value="92#">92#</option>
+                <option value="95#">95#</option>
+                <option value="98#">98#</option>
+                <option value="0#柴油">0#柴油</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>📝 备注（选填）</label>
+            <textarea id="note" rows="2" placeholder="例如：中石化、高速多等"></textarea>
+        </div>
+        <button onclick="addRecord()">➕ 添加记录</button>
+    </div>
+
+    <div class="history-header">
+        <h3>📋 历史记录</h3>
+        <span class="record-count" id="recordCount">0 条记录</span>
+    </div>
+
+    <div class="filter-bar">
+        <select id="filterMonth" onchange="render()">
+            <option value="all">全部月份</option>
+        </select>
+        <select id="filterFuelType" onchange="render()">
+            <option value="all">全部油品</option>
+            <option value="92#">92#</option>
+            <option value="95#">95#</option>
+            <option value="98#">98#</option>
+            <option value="0#柴油">0#柴油</option>
+        </select>
+        <button class="reset-filter" onclick="resetFilters()">重置</button>
+    </div>
+
+    <div class="record-list" id="recordList">
+        <div class="empty-state">暂无记录，添加第一条吧</div>
+    </div>
+
+    <div class="bottom-actions">
+        <button onclick="exportCSV()">📤 导出 CSV</button>
+        <button onclick="clearAll()" class="btn-danger">🗑️ 清空所有</button>
+    </div>
+
+    <div id="modal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="modalTitle">确认</h3>
+            <p id="modalMessage">确定要清空所有记录吗？</p>
+            <div class="btn-group">
+                <button onclick="closeModal()">取消</button>
+                <button id="modalConfirmBtn" class="btn-danger">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'fuel_records';
+
+        function getRecords() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveRecords(records) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+            updateMonthFilter();
+            render();
+        }
+
+        function calculateAmount() {
+            const fuel = parseFloat(document.getElementById('fuel').value) || 0;
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const amount = fuel * price;
+            document.getElementById('amountDisplay').innerHTML = `💰 金额: ${amount.toFixed(2)} 元`;
+            return amount;
+        }
+
+        function addRecord() {
+            const date = document.getElementById('date').value;
+            const fuel = parseFloat(document.getElementById('fuel').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const mileage = parseInt(document.getElementById('mileage').value);
+            const fuelType = document.getElementById('fuelType').value;
+            const note = document.getElementById('note').value.trim();
+            const amount = fuel * price;
+
+            if (!date) {
+                alert('请选择日期');
+                return;
+            }
+            if (isNaN(fuel) || fuel <= 0) {
+                alert('请输入有效的加油量');
+                return;
+            }
+            if (isNaN(price) || price <= 0) {
+                alert('请输入有效的单价');
+                return;
+            }
+            if (isNaN(mileage) || mileage <= 0) {
+                alert('请输入有效的里程数');
+                return;
+            }
+
+            const records = getRecords();
+            
+            if (records.some(r => r.date === date)) {
+                if (!confirm('该日期已有记录，是否覆盖？')) return;
+                const index = records.findIndex(r => r.date === date);
+                records.splice(index, 1);
+            }
+
+            records.push({ date, fuel, price, amount, mileage, fuelType, note });
+            records.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            saveRecords(records);
+            
+            document.getElementById('fuel').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('mileage').value = '';
+            document.getElementById('note').value = '';
+            document.getElementById('amountDisplay').innerHTML = `💰 金额: 0.00 元`;
+        }
+
+        function deleteRecord(date) {
+            let records = getRecords();
+            records = records.filter(r => r.date !== date);
+            saveRecords(records);
+        }
+
+        function clearAll() {
+            showModal('确认清空', '确定要删除所有记录吗？此操作不可恢复。', () => {
+                localStorage.removeItem(STORAGE_KEY);
+                updateMonthFilter();
+                render();
+                closeModal();
+            });
+        }
+
+        function calculateConsumption(record, prevRecord) {
+            if (!prevRecord) return null;
+            const distance = record.mileage - prevRecord.mileage;
+            if (distance <= 0) return null;
+            return ((record.fuel / distance) * 100).toFixed(1);
+        }
+
+        function updateMonthFilter() {
+            const records = getRecords();
+            const months = new Set();
+            records.forEach(record => {
+                const month = record.date.substring(0, 7); // YYYY-MM
+                months.add(month);
+            });
+            
+            const monthSelect = document.getElementById('filterMonth');
+            const currentValue = monthSelect.value;
+            
+            monthSelect.innerHTML = '<option value="all">全部月份</option>';
+            Array.from(months).sort().reverse().forEach(month => {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+            
+            if (currentValue && months.has(currentValue)) {
+                monthSelect.value = currentValue;
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('filterMonth').value = 'all';
+            document.getElementById('filterFuelType').value = 'all';
+            render();
+        }
+
+        function exportCSV() {
+            const records = getRecords();
+            if (records.length === 0) {
+                alert('暂无数据可导出');
+                return;
+            }
+
+            const sorted = [...records].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            let csv = '日期,加油量(L),单价(元/升),金额(元),里程(km),汽油标号,备注,百公里油耗(L/100km)\n';
+            
+            for (let i = 0; i < sorted.length; i++) {
+                const record = sorted[i];
+                const prevRecord = i > 0 ? sorted[i-1] : null;
+                const consumption = calculateConsumption(record, prevRecord);
+                csv += `${record.date},${record.fuel},${record.price},${record.amount.toFixed(2)},${record.mileage},${record.fuelType},"${record.note || ''}",${consumption || '-'}\n`;
+            }
+
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', `油耗记录_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showModal('导出成功', 'CSV 文件已保存', null, false);
+        }
+
+        let modalConfirmCallback = null;
+        
+        function showModal(title, message, onConfirm, showCancel = true) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            const cancelBtn = document.querySelector('#modal .btn-group button:first-child');
+            
+            if (showCancel) {
+                cancelBtn.style.display = 'block';
+                confirmBtn.innerText = '确认';
+                confirmBtn.className = 'btn-danger';
+            } else {
+                cancelBtn.style.display = 'none';
+                confirmBtn.innerText = '确定';
+                confirmBtn.className = '';
+            }
+            
+            modalConfirmCallback = onConfirm;
+            document.getElementById('modal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+            modalConfirmCallback = null;
+        }
+        
+        function confirmModal() {
+            if (modalConfirmCallback) {
+                modalConfirmCallback();
+            }
+            closeModal();
+        }
+
+        function render() {
+            const records = getRecords();
+            const filterMonth = document.getElementById('filterMonth').value;
+            const filterFuel = document.getElementById('filterFuelType').value;
+            
+            // 应用筛选
+            let filteredRecords = records;
+            if (filterMonth !== 'all') {
+                filteredRecords = filteredRecords.filter(r => r.date.startsWith(filterMonth));
+            }
+            if (filterFuel !== 'all') {
+                filteredRecords = filteredRecords.filter(r => r.fuelType === filterFuel);
+            }
+            
+            const sortedAsc = [...filteredRecords].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // 统计数据（基于筛选后的记录）
+            const totalFuel = filteredRecords.reduce((sum, r) => sum + r.fuel, 0);
+            let totalMileage = 0;
+            if (filteredRecords.length >= 2) {
+                const maxMileage = Math.max(...filteredRecords.map(r => r.mileage));
+                const minMileage = Math.min(...filteredRecords.map(r => r.mileage));
+                totalMileage = maxMileage - minMileage;
+            }
+            const totalCost = filteredRecords.reduce((sum, r) => sum + (r.amount || 0), 0);
+            
+            // 更新汇总显示
+            document.getElementById('totalFuel').innerText = totalFuel.toFixed(1);
+            document.getElementById('totalMileage').innerText = totalMileage;
+            document.getElementById('totalCost').innerText = totalCost.toFixed(2);
+            
+            // 显示筛选提示
+            let filterText = '';
+            if (filterMonth !== 'all') filterText += `${filterMonth} `;
+            if (filterFuel !== 'all') filterText += `${filterFuel} `;
+            if (filterText) filterText = `(${filterText})`;
+            document.getElementById('fuelUnit').innerHTML = `L ${filterText}`;
+            document.getElementById('costUnit').innerHTML = `元 ${filterText}`;
+            
+            document.getElementById('recordCount').innerHTML = `${filteredRecords.length} 条记录`;
+            
+            if (!document.getElementById('date').value) {
+                document.getElementById('date').value = new Date().toISOString().slice(0,10);
+            }
+            
+            const listContainer = document.getElementById('recordList');
+            if (filteredRecords.length === 0) {
+                listContainer.innerHTML = '<div class="empty-state">暂无记录，添加第一条吧</div>';
+                return;
+            }
+            
+            let html = '';
+            for (let i = 0; i < sortedAsc.length; i++) {
+                const record = sortedAsc[i];
+                const prevRecord = i > 0 ? sortedAsc[i-1] : null;
+                const consumption = calculateConsumption(record, prevRecord);
+                
+                html += `
+                    <div class="record-item">
+                        <div class="record-header">
+                            <span class="record-date">📅 ${record.date}</span>
+                            <button class="delete-btn" onclick="deleteRecord('${record.date}')">🗑️</button>
+                        </div>
+                        <div class="record-details">
+                            <span class="record-detail-item"><strong>⛽</strong> ${record.fuel.toFixed(1)} L</span>
+                            <span class="record-detail-item"><strong>💰</strong> ¥${record.price.toFixed(2)}/L</span>
+                            <span class="record-detail-item"><strong>💵</strong> ¥${(record.amount || record.fuel * record.price).toFixed(2)}</span>
+                        </div>
+                        <div class="record-details">
+                            <span class="record-detail-item"><strong>📊</strong> ${record.mileage.toLocaleString()} km</span>
+                            <span class="record-detail-item"><strong>🏷️</strong> ${record.fuelType}</span>
+                        </div>
+                        ${consumption ? `<div class="record-consumption">📈 百公里油耗: ${consumption} L/100km (约 ${(consumption * record.price / 100).toFixed(2)} 元/km)</div>` : '<div class="record-consumption">⏳ 需要上一次记录才能计算油耗</div>'}
+                        ${record.note ? `<div class="record-note">📝 ${escapeHtml(record.note)}</div>` : ''}
+                    </div>
+                `;
+            }
+            listContainer.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.getElementById('modalConfirmBtn').onclick = confirmModal;
+        
+        updateMonthFilter();
+        render();
+    </script>
+</body>
+</html>
