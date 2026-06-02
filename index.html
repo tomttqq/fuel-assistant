@@ -555,7 +555,7 @@
             
             if (consumptions.length === 0) return 0;
             const avg = consumptions.reduce((a, b) => a + b, 0) / consumptions.length;
-            return avg.toFixed(1);
+            return avg.toFixed(2);
         }
 
         function updateMonthFilter() {
